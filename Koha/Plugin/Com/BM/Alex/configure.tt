@@ -1,0 +1,61 @@
+[% USE KohaDates %]
+[% INCLUDE 'doc-head-open.inc' %]
+ <title>Koha: Alex Plugin: Inställningar</title>
+[% INCLUDE 'doc-head-close.inc' %]
+</head>
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Hem</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Alex &rsaquo; Inställningar</div>
+
+<div id="doc3" style="margin-left:20px">
+    <!-- We can access our own plugins resource files using the PLUGIN_PATH variable. -->
+    <!-- <img src="[% PLUGIN_PATH %]/logo.png" /> -->
+    <h3>Koha: Alex Plugin: Inställningar</h3>
+
+    <!-- Notice our form here has no 'action', this is good, it means that our forms will always get passed back to 'plugins/run.pl'. You could hard code it instead if you prefer -->
+    <form method="get">
+        <!-- Always pass these two parameters so the plugin system knows what to execute! -->
+        <input type="hidden" name="class" value="[% CLASS %]"/>
+        <input type="hidden" name="method" value="[% METHOD %]"/>
+
+        <label for="subscriptionKey">Alex lösenord: </label>
+        <input type="text" name="subscriptionKey" size="50" value="[% subscriptionKey %]" />
+
+        <p>
+        <!--
+        <label for="enable_opac_payments">Enable OPAC Account Payments: </label>
+        <select name="enable_opac_payments">
+            [% IF enable_opac_payments == 'No' %]
+                <option value="No" selected="selected">No</option>
+            [% ELSE %]
+                <option value="No">No</option>
+            [% END %]
+
+            [% IF enable_opac_payments == 'Yes' %]
+                <option value="Yes" selected="selected">Yes</option>
+            [% ELSE %]
+                <option value="Yes">Yes</option>
+            [% END %]
+        </select>
+
+        <p>
+        -->
+        <input type="hidden" name="save" value="1" />
+
+        <input type="submit" value="Spara" />
+    </form>
+
+    <hr/>
+
+    <p>
+        <h5>Upgrade status</h5>
+        [% IF last_upgraded %]
+            Plugin was last upgraded on this system on [% last_upgraded | $KohaDates with_hours => 1 %]
+        [% ELSE %]
+            Plugin has never been upgraded.
+        [% END %]
+    </p>
+
+[% INCLUDE 'intranet-bottom.inc' %]
