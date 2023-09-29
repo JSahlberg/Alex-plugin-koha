@@ -12,8 +12,6 @@ use C4::Auth;
 use C4::Context;
 use Koha::Biblios;
 
-#use C4::Biblio qw ( GetMarcBiblio  );
-
 use CGI qw ( -utf8 );
 use HTML::Entities;
 use strict;
