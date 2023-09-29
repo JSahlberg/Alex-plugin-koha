@@ -12,7 +12,7 @@ use C4::Auth;
 use C4::Context;
 use Koha::Biblios;
 
-use C4::Biblio qw ( GetMarcBiblio  );
+#use C4::Biblio qw ( GetMarcBiblio  );
 
 use CGI qw ( -utf8 );
 use HTML::Entities;
@@ -29,7 +29,7 @@ use LWP::UserAgent;
 use Mojo::JSON qw ( decode_json encode_json );
 
 ## Here we set our plugin version
-our $VERSION = "1.1.0";
+our $VERSION = "1.2.1";
 
 
 ## Here is our metadata, some keys are required, some are optional
@@ -37,7 +37,7 @@ our $metadata = {
   name            => 'Alex författarlexikon',
   author          => 'Johan Sahlberg',
   date_authored   => '2022-11-01',
-  date_updated    => "2023-01-05",
+  date_updated    => "2023-09-19",
   minimum_version => "20.11",
   maximum_version => undef,
   version         => $VERSION,
@@ -135,15 +135,13 @@ sub intranet_js {
   if (index($url, $prefurl) != -1) { # Kollar så vi är på rätt sida, dvs detail.pl
 
     if ( defined ( $query->param('biblionumber') ) ) { #Finns det ett biblionumber i url'en?
-      my $biblionumber = $query->param('biblionumber'); #Deklarera biblionumber
-      $biblionumber = HTML::Entities::encode($biblionumber); #Koda om till läsbart
-      my $record       = GetMarcBiblio({ biblionumber => $biblionumber }); #Hämta katalogposten
-      my $biblio = Koha::Biblios->find( $biblionumber );
+      my $biblio = Koha::Biblios->find( HTML::Entities::encode( $query->param('biblionumber') ) );
+      my $marcrecord = $biblio->metadata->record;
 
       my $result;
       my $author;
 
-      foreach my $tag (@{ $record->{_fields} }) { #Sök igenom alla fält i katalogposten
+      foreach my $tag (@{ $marcrecord->{_fields} }) { #Sök igenom alla fält i katalogposten
         if ($tag->{_tag} == "100") {
           my @subfields = $tag->{_subfields};
           my $indexnr = grep { $subfields[$_] == /a/ } 0..$#subfields;
@@ -154,7 +152,7 @@ sub intranet_js {
 
       if ( $author ) {
 
-        my $desc;
+        #my $desc;
 
         my $meta = $self->get_meta($author);
 
@@ -182,6 +180,7 @@ sub intranet_js {
 
             return q|
               <script>
+                
                 var alexFound = '| . $found . q|';
                 var alexArticle = '| . $article . q|';
                 var alexImageUrl = '| . $imageUrl  . q|';
@@ -265,7 +264,7 @@ sub intranet_js {
           } else {
             return q|
               <script>
-                console.log('Alex: Ingen info om författaren!');
+                console.log('(Alex) Ingen info om författaren!');
               </script>
             |;
           }
@@ -273,7 +272,7 @@ sub intranet_js {
       } else {
         return q|
           <script>
-            console.log('Alex: Ingen författare i posten!');
+            console.log('(Alex) Ingen författare i posten!');
           </script>
         |;
       }
@@ -305,14 +304,15 @@ sub opac_js {
 
     if ( defined ( $query->param('biblionumber') ) ) { #Finns det ett biblionumber i url'en?
       my $biblionumber = $query->param('biblionumber'); #Deklarera biblionumber
-      $biblionumber = HTML::Entities::encode($biblionumber); #Koda om till läsbart
-      my $record       = GetMarcBiblio({ biblionumber => $biblionumber }); #Hämta katalogposten
-      my $biblio = Koha::Biblios->find( $biblionumber );
+      my $encbiblionumber = HTML::Entities::encode($biblionumber); #Koda om till läsbart
+      my $biblio = Koha::Biblios->find( $encbiblionumber );
+      #my $record = GetMarcBiblio({ biblionumber => $biblionumber }); #Hämta katalogposten
+      my $marcrecord = $biblio->metadata->record;
 
       my $result;
       my $author;
 
-      foreach my $tag (@{ $record->{_fields} }) { #Sök igenom alla fält i katalogposten
+      foreach my $tag (@{ $marcrecord->{_fields} }) { #Sök igenom alla fält i katalogposten
         if ($tag->{_tag} == "100") {
           my @subfields = $tag->{_subfields};
           my $indexnr = grep { $subfields[$_] == /a/ } 0..$#subfields;
@@ -343,8 +343,10 @@ sub opac_js {
           my $bornDeadText = $meta->{'response'}->{'writers'}->{'writer'}->{'bornDeadText'};
           my $alexLogotype = $meta->{'response'}->{'writers'}->{'writer'}->{'alexLogotype'};
           my $alexLinkUrl = $meta->{'response'}->{'writers'}->{'writer'}->{'alexLinkUrl'};
-          $article =~ s/\R//g; #Ta bort onödiga radbrytningar
-          $article =~ s/'//g;
+          if ( $article ) {
+              $article =~ s/\R//g; #Ta bort onödiga radbrytningar
+              $article =~ s/'//g;
+          }
 
 
           if ($found == '1') {
@@ -410,7 +412,7 @@ sub opac_js {
           } else {
             return q|
               <script>
-                console.log('Alex: Ingen info om författaren!');
+                console.log('(Alex) Ingen info om författaren!');
               </script>
             |;
           }
@@ -418,7 +420,7 @@ sub opac_js {
       } else {
         return q|
           <script>
-            console.log('Alex: Ingen författare i posten!');
+            console.log('(Alex) Ingen författare i posten!');
           </script>
         |;
       }
@@ -432,6 +434,7 @@ sub opac_js {
   }    
 
 }
+
 
 
 
@@ -471,7 +474,7 @@ sub get_meta {
     ## finally return json
       return $decoded; #$jsonString;
     } else {
-      return $url;
+      return;
     }
 }
 
@@ -499,7 +502,7 @@ sub configure {
         $self->store_data(
             {
                 subscriptionKey => $cgi->param('subscriptionKey'),
-                last_configured_by => C4::Context->userenv->{'number'},
+                #last_configured_by => C4::Context->userenv->{'number'},
             }
         );
         $self->go_home();
@@ -511,19 +514,18 @@ sub configure {
 ## The installation method should always return true if the installation succeeded
 ## or false if it failed.
 sub install() {
-    my ( $self, $args ) = @_;
-
-    }
+  my ( $self, $args ) = @_;
+}
 
 ## This is the 'upgrade' method. It will be triggered when a newer version of a
 ## plugin is installed over an existing older version of a plugin
 sub upgrade {
-   my ( $self, $args ) = @_;
+  my ( $self, $args ) = @_;
 
-   my $dt = dt_from_string();
-   $self->store_data( { last_upgraded => $dt->ymd('-') . ' ' . $dt->hms(':') } );
+  #my $dt = dt_from_string();
+  #$self->store_data( { last_upgraded => $dt->ymd('-') . ' ' . $dt->hms(':') } );
 
-   return 1;
+  #return 1;
 }
 
 ## This method will be run just before the plugin files are deleted
