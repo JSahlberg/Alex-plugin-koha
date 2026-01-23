@@ -12,6 +12,8 @@ use C4::Auth;
 use C4::Context;
 use Koha::Biblios;
 
+#use C4::Biblio qw ( GetMarcBiblio  );
+
 use CGI qw ( -utf8 );
 use HTML::Entities;
 use strict;
@@ -27,7 +29,7 @@ use LWP::UserAgent;
 use Mojo::JSON qw ( decode_json encode_json );
 
 ## Here we set our plugin version
-our $VERSION = "1.2.1";
+our $VERSION = "1.2.2";
 
 
 ## Here is our metadata, some keys are required, some are optional
@@ -35,7 +37,7 @@ our $metadata = {
   name            => 'Alex författarlexikon',
   author          => 'Johan Sahlberg',
   date_authored   => '2022-11-01',
-  date_updated    => "2023-09-19",
+  date_updated    => "2026-01-21",
   minimum_version => "20.11",
   maximum_version => undef,
   version         => $VERSION,
@@ -225,7 +227,7 @@ sub intranet_js {
                 };
 
                 function alexDivDetail() {
-                  $('<div id="alextd" style="max-width:400px;float:right;position:absolute;display:inline;right:18px;background-color:#fff"></div>').insertBefore('#catalogue_detail_biblio');
+                  $('<div id="alextd" style="width:auto;max-width:400px;float:right;position:absolute;display:inline;right:18px;background-color:#fff"></div>').insertBefore('#catalogue_detail_biblio');
 
                   $('#alextd').append('<div id="alexwindow"></div>');
 
