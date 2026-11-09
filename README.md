@@ -5,3 +5,6 @@ Skapar en ruta med information om författaren på detaljsidan för en sökt bok
 
 Inställningar:
  - Skriv in lösenordet för ditt konto under "Konfigurera".
+
+## Licens
+GPL
